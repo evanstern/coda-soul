@@ -8,7 +8,7 @@
 _SOUL_PLUGIN_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Source library modules
-for _soul_mod in init reflect dream commit; do
+for _soul_mod in init reflect dream commit wiki; do
     if [ -f "$_SOUL_PLUGIN_DIR/lib/${_soul_mod}.sh" ]; then
         # shellcheck source=/dev/null
         source "$_SOUL_PLUGIN_DIR/lib/${_soul_mod}.sh"
@@ -104,6 +104,7 @@ _coda_soul() {
         reflect)  _soul_reflect "$@" ;;
         dream)    _soul_dream "$@" ;;
         commit)   _soul_commit "$@" ;;
+        wiki)     _soul_wiki "$@" ;;
         help|"")
             cat <<'EOF'
 coda soul -- persistent identity, memory, and personality
@@ -114,6 +115,7 @@ USAGE
   coda soul reflect                                           Trigger reflection
   coda soul dream [content]                                   Write a dream entry
   coda soul commit -m "message"                               Safe-commit memory files
+  coda soul wiki <search|read|ls|link> [args]                 Browse the soul's wiki
 EOF
             ;;
         *)
