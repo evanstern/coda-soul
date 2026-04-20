@@ -54,8 +54,10 @@ _soul_commit() {
     fi
 
     echo "All staged files are whitelisted. Committing..."
-    if ! git -C "$abs_dir" commit "$@"; then
-        return $?
+    git -C "$abs_dir" commit "$@"
+    local commit_rc=$?
+    if [ $commit_rc -ne 0 ]; then
+        return $commit_rc
     fi
 
     local push_output push_rc
