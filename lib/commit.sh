@@ -19,14 +19,14 @@ _soul_commit() {
         return 1
     fi
 
-    local WHITELIST=("memory/" "learnings/" "dreams/" "MEMORY.md")
+    local WHITELIST=("memory/" "learnings/" "dreams/" "wiki/" "MEMORY.md")
 
     local staged
     staged=$(git -C "$abs_dir" diff --cached --name-only)
 
     if [ -z "$staged" ]; then
         echo "Nothing staged to commit."
-        echo "Tip: git -C '$abs_dir' add memory/ learnings/ dreams/ MEMORY.md"
+        echo "Tip: git -C '$abs_dir' add memory/ learnings/ dreams/ wiki/ MEMORY.md"
         return 1
     fi
 
