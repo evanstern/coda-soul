@@ -54,5 +54,19 @@ _soul_commit() {
     fi
 
     echo "All staged files are whitelisted. Committing..."
-    git -C "$abs_dir" commit "$@" && git -C "$abs_dir" push 2>/dev/null
+    git -C "$abs_dir" commit "$@"
+    local commit_rc=$?
+    if [ $commit_rc -ne 0 ]; then
+        return $commit_rc
+    fi
+
+    local push_output push_rc
+    push_output=$(git -C "$abs_dir" push 2>&1)
+    push_rc=$?
+    if [ $push_rc -ne 0 ]; then
+        echo "WARNING: git push failed (exit $push_rc)." >&2
+        [ -n "$push_output" ] && printf '%s\n' "$push_output" >&2
+        echo "Retry manually: git -C '$abs_dir' push" >&2
+        return $push_rc
+    fi
 }

@@ -208,6 +208,6 @@ Be specific and actionable. No filler.
 PROMPT
     )
 
-    echo "Running reflection..."
+    echo "Running reflection..." >&2
     opencode run --pure "$prompt" 2>/dev/null
 }
