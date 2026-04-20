@@ -81,13 +81,10 @@ _soul_wiki_search() {
     fi
 
     local output
-    local rc=0
     if command -v rg &>/dev/null; then
         output=$(rg --line-number --with-filename --no-heading -C 1 "$color_flag" -- "$query" "${files[@]}" 2>/dev/null)
-        rc=$?
     else
         output=$(grep -rn -H -C 1 -- "$query" "${files[@]}" 2>/dev/null)
-        rc=$?
     fi
 
     if [ -z "$output" ]; then

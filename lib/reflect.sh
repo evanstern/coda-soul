@@ -145,7 +145,7 @@ Rules:
 PROMPT
     )
 
-    echo "Running reflection..."
+    echo "Running reflection..." >&2
 
     opencode run --pure "$proposals_prompt" 2>/dev/null || {
         # If the proposals call fails, still emit the header so downstream
