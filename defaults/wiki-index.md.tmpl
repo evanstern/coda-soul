@@ -1,0 +1,36 @@
+# Wiki -- {{NAME}}
+
+Project knowledge base. Pages are created and maintained through normal
+operation and updated during `/reflect` cycles.
+
+Format: **Obsidian markdown** with YAML frontmatter.
+
+## Page Types
+
+- **entities/** -- one page per significant thing (service, API, tool, library, person)
+- **patterns/** -- recurring approaches, workarounds, conventions
+- **decisions/** -- architectural decisions with context and rationale
+- **incidents/** -- bugs found, outages, surprising discoveries
+
+## Conventions
+
+- Every page starts with YAML frontmatter:
+  ```yaml
+  ---
+  tags:
+    - entity         # page type (entity/pattern/decision/incident)
+    - domain-tag     # domain-specific tags
+  description: One-line summary of this page
+  aliases:
+    - alt-name       # optional alternate names for linking
+  created: YYYY-MM-DD
+  updated: YYYY-MM-DD
+  ---
+  ```
+- Internal links: `[[page-name]]` (no paths, no `.md` extension)
+- `[[page|display text]]` for aliased links
+- Cross-reference liberally between pages
+
+## Pages
+
+(None yet. Pages are added as knowledge accumulates.)

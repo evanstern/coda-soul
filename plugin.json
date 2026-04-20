@@ -1,0 +1,77 @@
+{
+  "name": "soul",
+  "version": "0.1.0",
+  "description": "Persistent identity, memory, and personality for any coda session",
+  "coda": ">=0.1.0",
+
+  "dependencies": {
+    "system": ["git"]
+  },
+
+  "provides": {
+    "commands": {
+      "soul": {
+        "handler": "coda-handler.sh",
+        "function": "_coda_soul"
+      }
+    },
+
+    "completions": {
+      "soul": {
+        "subcommands": "init status reflect dream commit help"
+      }
+    },
+
+    "mcp_tools": {
+      "coda_soul_init": {
+        "description": "Initialize identity files (SOUL.md, MEMORY.md, PROJECT.md, memory/, learnings/, dreams/) in a directory",
+        "command": ["coda", "soul", "init"],
+        "params": {
+          "name": {
+            "type": "string",
+            "description": "Identity name"
+          },
+          "template": {
+            "type": "string",
+            "description": "Path to a custom SOUL.md template",
+            "optional": true
+          },
+          "from": {
+            "type": "string",
+            "description": "Clone identity from another soul directory",
+            "optional": true
+          }
+        }
+      },
+      "coda_soul_status": {
+        "description": "Show current identity summary (name, role, memory stats)",
+        "command": ["coda", "soul", "status"]
+      },
+      "coda_soul_reflect": {
+        "description": "Trigger reflection against current soul -- deep synthesis, propose personality updates",
+        "command": ["coda", "soul", "reflect"]
+      },
+      "coda_soul_dream": {
+        "description": "Write a dream entry for the current soul",
+        "command": ["coda", "soul", "dream"],
+        "params": {
+          "content": {
+            "type": "string",
+            "description": "Dream entry content",
+            "optional": true
+          }
+        }
+      },
+      "coda_soul_commit": {
+        "description": "Safe-commit memory/learnings changes (whitelist-only commit and push)",
+        "command": ["coda", "soul", "commit"],
+        "params": {
+          "message": {
+            "type": "string",
+            "description": "Commit message"
+          }
+        }
+      }
+    }
+  }
+}
