@@ -18,7 +18,7 @@
 
     "completions": {
       "soul": {
-        "subcommands": "init status reflect dream commit help"
+        "subcommands": "init status reflect dream commit wiki help"
       }
     },
 

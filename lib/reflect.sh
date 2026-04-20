@@ -3,6 +3,45 @@
 # reflect.sh -- reflection engine
 #
 
+# Find the newest mtime among wiki/**/*.md. Prints a unix timestamp, or
+# empty string if wiki has no markdown files.
+_soul_reflect_wiki_mtime() {
+    local wiki_dir="$1"
+    [ ! -d "$wiki_dir" ] && return 0
+    local newest=""
+    local f
+    while IFS= read -r -d '' f; do
+        local m
+        m=$(stat -c %Y "$f" 2>/dev/null || stat -f %m "$f" 2>/dev/null)
+        [ -z "$m" ] && continue
+        if [ -z "$newest" ] || [ "$m" -gt "$newest" ]; then
+            newest="$m"
+        fi
+    done < <(find "$wiki_dir" -type f -name '*.md' -print0 2>/dev/null)
+    [ -n "$newest" ] && printf '%s\n' "$newest"
+}
+
+# Print file paths in <dir> (markdown) modified strictly after <since_ts>.
+# If since_ts is empty, print all files.
+_soul_reflect_sources_since() {
+    local dir="$1"
+    local since_ts="$2"
+    [ ! -d "$dir" ] && return 0
+    local f
+    while IFS= read -r -d '' f; do
+        if [ -z "$since_ts" ]; then
+            printf '%s\n' "$f"
+            continue
+        fi
+        local m
+        m=$(stat -c %Y "$f" 2>/dev/null || stat -f %m "$f" 2>/dev/null)
+        [ -z "$m" ] && continue
+        if [ "$m" -gt "$since_ts" ]; then
+            printf '%s\n' "$f"
+        fi
+    done < <(find "$dir" -type f -name '*.md' -print0 2>/dev/null | sort -z)
+}
+
 _soul_reflect() {
     local dir
     dir="$(_soul_resolve_dir)"
@@ -46,14 +85,74 @@ _soul_reflect() {
     [ -f "$abs_dir/wiki/index.md" ] && wiki_index=$(cat "$abs_dir/wiki/index.md")
 
     local wiki_pages=""
+    local wiki_full=""
     if [ -d "$abs_dir/wiki" ]; then
         local wf
         for wf in $(find "$abs_dir/wiki" -name '*.md' ! -name 'index.md' -type f 2>/dev/null | sort | tail -10); do
-            local relpath="${wf#$abs_dir/}"
+            local relpath="${wf#"$abs_dir"/}"
             wiki_pages+="\n--- $relpath ---\n"
             wiki_pages+=$(cat "$wf")
         done
+        local wf2
+        while IFS= read -r -d '' wf2; do
+            local rp="${wf2#"$abs_dir"/}"
+            wiki_full+="\n--- $rp ---\n"
+            wiki_full+=$(cat "$wf2")
+        done < <(find "$abs_dir/wiki" -type f -name '*.md' -print0 2>/dev/null | sort -z)
     fi
+
+    # Collect memory/learning files newer than the newest wiki page. If the
+    # wiki is empty, include everything.
+    local wiki_mtime
+    wiki_mtime=$(_soul_reflect_wiki_mtime "$abs_dir/wiki")
+
+    local candidate_sources=""
+    local src
+    while IFS= read -r src; do
+        [ -z "$src" ] && continue
+        local rp="${src#"$abs_dir"/}"
+        candidate_sources+="\n--- $rp ---\n"
+        candidate_sources+=$(cat "$src")
+    done < <({
+        _soul_reflect_sources_since "$abs_dir/memory"    "$wiki_mtime"
+        _soul_reflect_sources_since "$abs_dir/learnings" "$wiki_mtime"
+    })
+
+    local proposals_prompt
+    proposals_prompt=$(cat <<PROMPT
+You are proposing wiki updates for an agent's knowledge base.
+
+Current wiki contents (pages with frontmatter and body):
+${wiki_full:-<empty>}
+
+Memory and learnings modified since the newest wiki page (or all, if wiki is empty):
+${candidate_sources:-<none>}
+
+Produce ONLY a markdown block in exactly this shape, no preamble:
+
+## Proposed wiki updates
+
+### Create
+- wiki/<type>/<slug>.md -- <one-line reason>
+
+### Update
+- wiki/<type>/<slug>.md -- <one-line reason>
+
+Rules:
+- <type> is one of: entities, decisions, patterns, incidents.
+- If nothing fits a section, leave the section header and omit bullets.
+- One bullet per page. Be specific and actionable. No filler.
+PROMPT
+    )
+
+    echo "Running reflection..." >&2
+
+    opencode run --pure "$proposals_prompt" 2>/dev/null || {
+        # If the proposals call fails, still emit the header so downstream
+        # consumers see a stable shape.
+        printf '## Proposed wiki updates\n\n### Create\n\n### Update\n'
+    }
+    printf '\n\n'
 
     local prompt
     prompt=$(cat <<PROMPT
