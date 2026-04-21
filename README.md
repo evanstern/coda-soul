@@ -166,6 +166,3 @@ bats tests/
 Covers the reflect and wiki subcommands. New behavior should land with
 a matching `.bats` file under `tests/`.
 
-## License
-
-See [`LICENSE`](LICENSE) in the repo root.
